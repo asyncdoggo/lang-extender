@@ -1,0 +1,25 @@
+{
+    "manifest_version": 3,
+    "name": "Lang Extender",
+    "version": "1.0",
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "content_scripts/main.js"
+            ]
+        }
+    ],
+    "permissions": [
+            "storage",
+            "activeTab"
+    ],
+    "action": {
+        "default_popup": "popup/popup.html"
+    },
+    "background": {
+        "service_worker": "background/background.js"
+    }
+}

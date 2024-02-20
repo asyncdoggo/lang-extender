@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Extension Settings</title>
+  <link rel="stylesheet" href="popup.css">
+  <style>
+    
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Extension Settings</h2>
+    <label class="switch">
+      <input type="checkbox" id="toggleSwitch">
+      <span class="slider"></span>
+    </label>
+    <p id="status">Extension is currently <span id="statusText">enabled</span>.</p>
+  </div>
+  <div class="language-selector">
+      <h2>Select Language:</h2>
+      <label for="languageFromSelect">From</label>
+      <select id="languageFromSelect"></select>
+      <label for="languageToSelect">To</label>
+      <select id="languageToSelect"></select>
+
+    </div>
+  <script src="popup.js"></script>
+</body>
+</html>
