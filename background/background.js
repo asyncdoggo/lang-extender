@@ -7,9 +7,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         fetch(translate_url)
             .then(response => response.json())
             .then(languages => {
-                sendResponse({languages: languages });
+                sendResponse({ languages: languages });
             })
             .catch(error => console.error('Error fetching languages:', error));
+    }
+    if (message.action === 'openPlayground') {
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            chrome.scripting.executeScript({
+                target: { tabId: tabs[0].id },
+                files: ['content_scripts/playground.js']
+            });
+        });
     }
     return true;
 });

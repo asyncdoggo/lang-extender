@@ -76,4 +76,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+
+    const openPlaygroundButton = document.getElementById('openPlayground');
+
+    openPlaygroundButton.addEventListener('click', function () {
+        chrome.runtime.sendMessage({ action: 'openPlayground' });
+    });
+
 });
