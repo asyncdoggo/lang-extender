@@ -1,3 +1,6 @@
+let timer = null
+
+
 function createPlayground() {
     // Create the floating window
     const playgroundWindow = document.createElement('div')
@@ -18,6 +21,7 @@ function createPlayground() {
     select2.id = 'language2';
     const textArea2 = document.createElement('textarea');
     textArea2.id = 'text2';
+    textArea2.readOnly = true;
     playgroundWindow.appendChild(select2);
     playgroundWindow.appendChild(textArea2);
     const dismissButton = document.createElement('button');
@@ -33,12 +37,11 @@ function createPlayground() {
         position: absolute;
         z-index: 1000;
         width: 300px;
-        height: 300px;
         background-color: white;
         border: 1px solid black;
         box-shadow: 0px 0px 5px 0px black;
         border-radius: 5px;
-        padding: 10px;
+        padding:0 10px 10px 10px;
     }
     #resize_bar {
         width: 100%;
@@ -47,24 +50,27 @@ function createPlayground() {
         cursor: move;
         user-select: none;
     }
-    #dismissButton {
-        position: absolute;
-        bottom: 5px;
-        right: 5px;
-    }
     #language1, #language2 {
         width: 100%;
         margin-bottom: 5px;
     }
+
     #text1, #text2 {
         width: 100%;
         height: 100px;
         margin-bottom: 5px;
     }
     #dismissButton {
-        position: absolute;
-        bottom: 5px;
-        right: 5px;
+        background-color: #f44336;
+        color: white;
+        
+    }
+    #text1, #text2 {
+        resize: none;
+        margin-bottom: 5px;
+    }
+    #resize_bar p {
+        margin: 5px;
     }
     `
 
@@ -102,7 +108,105 @@ function createPlayground() {
     dismissButton.addEventListener('click', function () {
         playgroundWindow.remove(); // Remove the playground window from the DOM
     });
+
+
+    // get languages from the storage
+    chrome.storage.sync.get(['languages'], function (data) {
+        let languages = data.languages;
+        for (const key in languages) {
+            const option = document.createElement('option');
+            option.value = key;
+            option.text = key;
+            select1.appendChild(option);
+        }
+        const toList = languages[Object.keys(languages)[0]];
+        for (const language of toList) {
+            const option = document.createElement('option');
+            option.value = language;
+            option.text = language;
+            select2.appendChild(option);
+        }
+    });
+
+
+    select1.addEventListener('change', function () { 
+        const selectedLanguage = select1.value;
+        chrome.storage.sync.get(['languages']).then(data => {
+            const toLanguages = data.languages[selectedLanguage];
+            select2.innerHTML = '';
+            for (language of toLanguages) {
+                const option = document.createElement('option');
+                option.value = language;
+                option.text = language;
+                select2.appendChild(option);
+                setSelected(select1, select2);
+            }
+
+        })
+    })
+
+    select2.addEventListener('change', () => {
+        setSelected(select1, select2);
+    })
+
+    textArea1.addEventListener('input', function () {
+        // check if user has stopped typing for 1 second
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            const text = textArea1.value;
+            const from_code = select1.value;
+            const to_code = select2.value;
+            fetch('http://localhost:5005/translate/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text, from_code, to_code })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    textArea2.value = data.translation;
+                })
+                .catch(error => {
+                    console.error('Error fetching languages:', error);
+                })
+        }
+            , 1000);
+                
+        const text = textArea1.value;
+        const from_code = select1.value;
+        const to_code = select2.value;
+        // fetch('http://localhost:5005/translate/', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json'
+        //     },
+        //     body: JSON.stringify({ text, from_code, to_code })
+        // })
+        //     .then(response => response.json())
+        //     .then(data => {
+        //         textArea2.value = data.translation;
+        //     })
+        //     .catch(error => {
+        //         console.error('Error fetching languages:', error);
+        //     })
+    })
+
+
 }
+
+const setSelected = (languageFromSelect, languageToSelect) => { 
+    const toSelectedLanguage = languageToSelect.value;
+    const fromSelectedLanguage = languageFromSelect.value;
+    chrome.storage.sync.set({ 'selectedLanguage': { from: fromSelectedLanguage, to: toSelectedLanguage } });
+}
+
+
+
+
+
+
+
 
 // Call the function to create the playground
 createPlayground();
