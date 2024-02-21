@@ -1,6 +1,10 @@
+const translate_url = "http://localhost:5005/translate/list/"
+
+
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'getLanguages') {
-        fetch('http://localhost:8000/translate/list/')
+        fetch(translate_url)
             .then(response => response.json())
             .then(languages => {
                 sendResponse({languages: languages });

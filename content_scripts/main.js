@@ -5,22 +5,29 @@ position = {
     y: 0
 }
 
-document.addEventListener('selectionchange', (event) => {    
+const translate_url = "http://localhost:5005/translate/"
+
+
+document.addEventListener('selectionchange', (event) => {
+    if (event.target.className === 'popup') { 
+        return
+    }
+
     const selection = window.getSelection();
-        selected_text = selection.toString();
+    selected_text = selection.toString();
 })
 
 document.addEventListener('mouseup', (event) => {
     // if selected text is in the popup then return
-    if (event.target.id === 'popup') {
+    if (event.target.className === 'popup') {
         return
     }
 
 
     if (event.button === 0) {
         if (selected_text.length > 0) {
-            translate(selected_text, (translated_text) => { 
-                showPopup(translated_text, position.x, position.y);
+            translate(selected_text, (data) => {
+                showPopup(data, position.x, position.y);
             })
             position.x = event.pageX
             position.y = event.pageY
@@ -30,7 +37,7 @@ document.addEventListener('mouseup', (event) => {
 
 document.addEventListener('mousedown', (event) => {
     // if mouse down on the popup then return
-    if (event.target.id === 'popup') {
+    if (event.target.className === 'popup') {
         return
     }
     document.getElementById('popup')?.remove();
@@ -44,11 +51,10 @@ document.addEventListener('mousedown', (event) => {
 
 function translate(text, callback) {
 
-    chrome.storage.sync.get(['selectedLanguage'], (data) => { 
-        console.log('Translating:', data);
+    chrome.storage.sync.get(['selectedLanguage'], (data) => {
         const from_code = data.selectedLanguage.from;
         const to_code = data.selectedLanguage.to;
-        fetch("http://localhost:8000/translate/",
+        fetch(translate_url,
             {
                 method: 'POST',
                 headers: {
@@ -61,25 +67,57 @@ function translate(text, callback) {
             .then(data => {
                 console.log('Translated:', data);
                 if (callback) {
-                    callback(data.translation);
+                    callback(data);
                 }
             })
-            .catch(error => console.error('Error fetching languages:', error));
-    });
+            .catch(error => {
+                chrome.runtime.sendMessage({ action: "error", error: error });
+                // console.error('Error fetching languages:', error);
+            })
+    })
 }
 
 // show popup with translated text at the selected text
-function showPopup(translated_text, x, y) { 
+function showPopup(data, x, y) { 
+
     const popup = document.createElement('div');
     popup.id = 'popup';
+    popup.className = 'popup';
     popup.style.position = 'absolute';
-    popup.style.top = `${y}px`;
-    popup.style.left = `${x}px`;
+    popup.style.left = x + 'px';
+    popup.style.top = y + 'px';
     popup.style.backgroundColor = 'white';
     popup.style.border = '1px solid black';
-    popup.style.padding = '10px';
-    popup.style.zIndex = '9999';
-    popup.style.color = 'black';
-    popup.innerHTML = translated_text;
+    popup.style.padding = '5px';
+    popup.style.zIndex = '1000';
+    popup.style.boxShadow = '0px 0px 5px 0px black';
+    popup.style.borderRadius = '5px';
+    popup.style.maxWidth = '300px';
+    
+    const translation = document.createElement('div');
+    translation.style.fontWeight = 'bold';
+    translation.className = 'popup'
+    translation.style.setProperty('color', 'black', "important");
+    translation.textContent = data.translation;
+    popup.appendChild(translation);
+
+    if (data.meaning.length > 0) { 
+        const meaning = document.createElement('div');
+        meaning.className = 'popup'
+        meaning.style.setProperty('color', 'black', "important");
+        meaning.textContent += "Meaning: " + data.meaning.join(', ');
+        popup.appendChild(meaning);
+    }
+
+    if (data.similar_words.length > 0) { 
+        const synonyms = document.createElement('div');
+        synonyms.className = 'popup'
+        synonyms.style.setProperty('color', 'black', "important");
+        synonyms.textContent += "Synonyms: " + data.similar_words.join(', ');
+        popup.appendChild(synonyms);
+    }
+
+
+
     document.body.appendChild(popup);
 }

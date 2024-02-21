@@ -68,4 +68,12 @@ document.addEventListener('DOMContentLoaded', function () {
     })
     languageToSelect.addEventListener('change', setSelected)
 
+
+
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        if (request.action === 'error') {
+            document.getElementById('error').textContent = request.error;
+        }
+    });
+
 });
