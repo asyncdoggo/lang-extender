@@ -85,7 +85,7 @@ function showPopup(data, x, y) {
     popup.className = 'popup';
     popup.style.position = 'absolute';
     popup.style.left = x + 'px';
-    popup.style.top = y + 'px';
+    popup.style.top = y + 15 + 'px';
     popup.style.backgroundColor = 'white';
     popup.style.border = '1px solid black';
     popup.style.padding = '5px';
