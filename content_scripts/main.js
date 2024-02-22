@@ -8,16 +8,56 @@ position = {
 const translate_url = "http://localhost:5005/translate/"
 
 
-document.addEventListener('selectionchange', (event) => {
-    if (event.target.className === 'popup') { 
-        return
-    }
 
-    const selection = window.getSelection();
-    selected_text = selection.toString();
+chrome.storage.sync.get(['enabled'], (data) => { 
+    console.log(data);
+    if (data.enabled) {
+        startEventListeners();
+    }
 })
 
-document.addEventListener('mouseup', (event) => {
+
+
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    
+    if (request.enabled) {
+        startEventListeners();
+    }
+    else if (!request.enabled) {
+        stopEventListeners();
+    }
+
+})
+
+
+function startEventListeners() {
+    document.addEventListener('selectionchange', selectionChange)
+    document.addEventListener('mouseup', mouseUpEvent)
+    document.addEventListener('mousedown', mousedownEvent)
+}
+
+function stopEventListeners() { 
+    document.removeEventListener('selectionchange', selectionChange)
+    document.removeEventListener('mouseup', mouseUpEvent)
+    document.removeEventListener('mousedown', mousedownEvent)
+}
+
+
+const mousedownEvent = (event) => {
+    // if mouse down on the popup then return
+    if (event.target.className === 'popup') {
+        return
+    }
+    document.getElementById('popup')?.remove();
+
+    mouse_timer = performance.now();
+    if (event.button === 0) {
+        selected_text = '';
+    }
+}
+
+const mouseUpEvent = (event) => {
     // if selected text is in the popup then return
     if (event.target.className === 'popup') {
         return
@@ -33,20 +73,19 @@ document.addEventListener('mouseup', (event) => {
             position.y = event.pageY
         }
     }
-})
+}
 
-document.addEventListener('mousedown', (event) => {
-    // if mouse down on the popup then return
+
+
+const selectionChange = (event) => {
     if (event.target.className === 'popup') {
         return
     }
-    document.getElementById('popup')?.remove();
 
-    mouse_timer = performance.now();
-    if (event.button === 0) {
-        selected_text = '';
-    }
-})
+    const selection = window.getSelection();
+    selected_text = selection.toString();
+}
+
 
 
 function translate(text, callback) {
@@ -77,7 +116,7 @@ function translate(text, callback) {
 }
 
 // show popup with translated text at the selected text
-function showPopup(data, x, y) { 
+function showPopup(data, x, y) {
 
     const popup = document.createElement('div');
     popup.id = 'popup';
@@ -92,7 +131,7 @@ function showPopup(data, x, y) {
     popup.style.boxShadow = '0px 0px 5px 0px black';
     popup.style.borderRadius = '5px';
     popup.style.maxWidth = '300px';
-    
+
     const translation = document.createElement('div');
     translation.style.fontWeight = 'bold';
     translation.className = 'popup'
@@ -100,7 +139,7 @@ function showPopup(data, x, y) {
     translation.textContent = data.translation;
     popup.appendChild(translation);
 
-    if (data.meaning.length > 0) { 
+    if (data.meaning.length > 0) {
         const meaning = document.createElement('div');
         meaning.className = 'popup'
         meaning.style.setProperty('color', 'black', "important");
@@ -108,7 +147,7 @@ function showPopup(data, x, y) {
         popup.appendChild(meaning);
     }
 
-    if (data.similar_words.length > 0) { 
+    if (data.similar_words.length > 0) {
         const synonyms = document.createElement('div');
         synonyms.className = 'popup'
         synonyms.style.setProperty('color', 'black', "important");

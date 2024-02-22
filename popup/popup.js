@@ -26,8 +26,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Load the current toggle state from storage
     chrome.storage.sync.get('enabled', function (data) {
+
         toggleSwitch.checked = data.enabled;
         statusText.textContent = data.enabled ? 'enabled' : 'disabled';
+        // Send a message to the content script to toggle the extension's enabled state
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, { enabled: data.enabled });
+        });
     });
 
     // Toggle the extension's enabled state when the switch changes
@@ -36,6 +41,9 @@ document.addEventListener('DOMContentLoaded', function () {
         statusText.textContent = enabled ? 'enabled' : 'disabled';
         // Save the toggle state to storage
         chrome.storage.sync.set({ 'enabled': enabled });
+        chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, { enabled: enabled });
+        });
     });
 
      
