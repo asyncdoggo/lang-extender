@@ -1,7 +1,15 @@
-let timer = null
 
 
 function createPlayground() {
+
+    const setSelected = (languageFromSelect, languageToSelect) => {
+        const toSelectedLanguage = languageToSelect.value;
+        const fromSelectedLanguage = languageFromSelect.value;
+        // chrome.storage.sync.set({ 'selectedLanguage': { from: fromSelectedLanguage, to: toSelectedLanguage } });
+    }
+
+
+    let timer = null
     const translate_url = 'http://localhost:5005/translate/'
     // Create the floating window
     const playgroundWindow = document.createElement('div')
@@ -35,8 +43,10 @@ function createPlayground() {
 
     const styles = `
     #playgroundWindow {
+        left: 0;
+        top: 0;
         position: absolute;
-        z-index: 1000;
+        z-index: 9999;
         width: 300px;
         background-color: white;
         border: 1px solid black;
@@ -54,23 +64,27 @@ function createPlayground() {
     #language1, #language2 {
         width: 100%;
         margin-bottom: 5px;
+        background-color: white !important;
+        color: black !important;
     }
 
     #text1, #text2 {
         width: 100%;
         height: 100px;
         margin-bottom: 5px;
+        background-color: white !important;
+        color: black !important;
+        resize: none;
     }
     #dismissButton {
         background-color: #f44336;
         color: white;
         
     }
-    #text1, #text2 {
-        resize: none;
-        margin-bottom: 5px;
-    }
+   
     #resize_bar p {
+        background-color: white !important;
+        color: black !important;
         margin: 5px;
     }
     `
@@ -174,15 +188,8 @@ function createPlayground() {
         }
             , 1000);
     })
-
-
 }
 
-const setSelected = (languageFromSelect, languageToSelect) => { 
-    const toSelectedLanguage = languageToSelect.value;
-    const fromSelectedLanguage = languageFromSelect.value;
-    chrome.storage.sync.set({ 'selectedLanguage': { from: fromSelectedLanguage, to: toSelectedLanguage } });
-}
 
 
 // Call the function to create the playground

@@ -9,8 +9,7 @@ const translate_url = "http://localhost:5005/translate/"
 
 
 
-chrome.storage.sync.get(['enabled'], (data) => { 
-    console.log(data);
+chrome.storage.sync.get(['enabled'], (data) => {
     if (data.enabled) {
         startEventListeners();
     }
@@ -20,7 +19,7 @@ chrome.storage.sync.get(['enabled'], (data) => {
 
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    
+
     if (request.enabled) {
         startEventListeners();
     }

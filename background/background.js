@@ -1,10 +1,10 @@
-const translate_url = "http://localhost:5005/translate/list/"
+const language_get_url = "http://localhost:5005/translate/list/"
 
 
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'getLanguages') {
-        fetch(translate_url)
+        fetch(language_get_url)
             .then(response => response.json())
             .then(languages => {
                 sendResponse({ languages: languages });
@@ -22,3 +22,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
 });
 
+
+chrome.runtime.onInstalled.addListener(() => { 
+    chrome.storage.sync.set({ 'enabled': true });
+
+    fetch(language_get_url)
+        .then(response => response.json())
+        .then(languages => {
+            chrome.storage.sync.set({ 'languages': languages });
+        })
+        .catch(error => console.error('Error fetching languages:', error));
+    
+    chrome.storage.sync.set({ 'selectedLanguage': { from: '', to: '' } }); 
+})
