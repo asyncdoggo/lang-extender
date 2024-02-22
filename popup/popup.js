@@ -11,8 +11,14 @@ document.addEventListener('DOMContentLoaded', function () {
             languages = updateLanguages(languageFromSelect, languageToSelect);
             setSelected(languageFromSelect, languageToSelect);
         } else {
-            fillLanguages(languages, languageFromSelect, languageToSelect);
-            setSelected(languageFromSelect, languageToSelect);
+            chrome.storage.sync.get(['selectedLanguage', 'languages'], function (data) {
+                const selectedLanguage = data.selectedLanguage;
+                const languages = data.languages;
+                fillLanguages(languages, languageFromSelect, languageToSelect, selectedLanguage.from);
+                languageFromSelect.value = selectedLanguage.from;
+                languageToSelect.value = selectedLanguage.to;
+
+            });
         }
     });
 
@@ -72,7 +78,6 @@ const setSelected = (languageFromSelect, languageToSelect) => {
     const toSelectedLanguage = languageToSelect.value;
     const fromSelectedLanguage = languageFromSelect.value;
     chrome.storage.sync.set({ 'selectedLanguage': { from: fromSelectedLanguage, to: toSelectedLanguage } });
-    console.log('Selected language:', fromSelectedLanguage, toSelectedLanguage);
 }
 
 
@@ -88,8 +93,7 @@ const updateLanguages = (languageFromSelect, languageToSelect) => {
 }
 
 
-const fillLanguages = (languages, languageFromSelect, languageToSelect) => { 
-    
+const fillLanguages = (languages, languageFromSelect, languageToSelect, selectedFrom) => { 
 
         for (const key in languages) {
             const option = document.createElement('option');
@@ -98,7 +102,9 @@ const fillLanguages = (languages, languageFromSelect, languageToSelect) => {
             languageFromSelect.appendChild(option);
         }
 
-        const toList = languages[Object.keys(languages)[0]];
+        selectedFrom = selectedFrom || Object.keys(languages)[0];
+    
+        const toList = languages[selectedFrom];
         for (const language of toList) {
             const option = document.createElement('option');
             option.value = language;

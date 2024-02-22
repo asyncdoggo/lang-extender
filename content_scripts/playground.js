@@ -2,6 +2,7 @@ let timer = null
 
 
 function createPlayground() {
+    const translate_url = 'http://localhost:5005/translate/'
     // Create the floating window
     const playgroundWindow = document.createElement('div')
     playgroundWindow.id = 'playgroundWindow';
@@ -156,7 +157,7 @@ function createPlayground() {
             const text = textArea1.value;
             const from_code = select1.value;
             const to_code = select2.value;
-            fetch('http://localhost:5005/translate/', {
+            fetch(translate_url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -172,24 +173,6 @@ function createPlayground() {
                 })
         }
             , 1000);
-                
-        const text = textArea1.value;
-        const from_code = select1.value;
-        const to_code = select2.value;
-        // fetch('http://localhost:5005/translate/', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     },
-        //     body: JSON.stringify({ text, from_code, to_code })
-        // })
-        //     .then(response => response.json())
-        //     .then(data => {
-        //         textArea2.value = data.translation;
-        //     })
-        //     .catch(error => {
-        //         console.error('Error fetching languages:', error);
-        //     })
     })
 
 
@@ -200,12 +183,6 @@ const setSelected = (languageFromSelect, languageToSelect) => {
     const fromSelectedLanguage = languageFromSelect.value;
     chrome.storage.sync.set({ 'selectedLanguage': { from: fromSelectedLanguage, to: toSelectedLanguage } });
 }
-
-
-
-
-
-
 
 
 // Call the function to create the playground

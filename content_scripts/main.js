@@ -65,14 +65,13 @@ function translate(text, callback) {
         )
             .then(response => response.json())
             .then(data => {
-                console.log('Translated:', data);
                 if (callback) {
                     callback(data);
                 }
             })
             .catch(error => {
-                chrome.runtime.sendMessage({ action: "error", error: error });
-                // console.error('Error fetching languages:', error);
+                // chrome.runtime.sendMessage({ action: "error", error: error });
+                console.error('Error fetching languages:', error);
             })
     })
 }
