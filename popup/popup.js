@@ -9,17 +9,20 @@ document.addEventListener('DOMContentLoaded', function () {
         let languages = data.languages;
         if (!languages) {
             languages = updateLanguages(languageFromSelect, languageToSelect);
+            fillLanguages(languages, languageFromSelect, languageToSelect);
             setSelected(languageFromSelect, languageToSelect);
+            
         } else {
             chrome.storage.sync.get(['selectedLanguage', 'languages'], function (data) {
+                console.log(data);
                 const selectedLanguage = data.selectedLanguage;
                 const languages = data.languages;
                 fillLanguages(languages, languageFromSelect, languageToSelect, selectedLanguage.from);
                 languageFromSelect.value = selectedLanguage.from;
                 languageToSelect.value = selectedLanguage.to;
-
             });
         }
+        
     });
 
 
@@ -90,12 +93,11 @@ const setSelected = (languageFromSelect, languageToSelect) => {
 
 
 
-const updateLanguages = (languageFromSelect, languageToSelect) => { 
+const updateLanguages = () => { 
     chrome.runtime.sendMessage({ action: 'getLanguages' }, (response) => {
         const languages = response.languages;
         // store languages in storage
         chrome.storage.sync.set({ 'languages': languages });
-        fillLanguages(languages, languageFromSelect, languageToSelect);
         return languages;
     });
 }

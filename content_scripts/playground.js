@@ -10,6 +10,7 @@ function createPlayground() {
 
 
     let timer = null
+    let timer2 = null
     const translate_url = 'http://localhost:5005/translate/'
     // Create the floating window
     const playgroundWindow = document.createElement('div')
@@ -34,12 +35,22 @@ function createPlayground() {
     playgroundWindow.appendChild(select2);
     playgroundWindow.appendChild(textArea2);
     const dismissButton = document.createElement('button');
+    // Append the floating window to the document body
+    detectLanguageBox = document.createElement('div');
+    detectLanguageBox.id = 'detectLanguageBox';
+    detectTextBox = document.createElement('textarea');
+    detectTextBox.id = 'detectTextBox';
+    detectTextBox.placeholder = 'Detect Language';
+    detectLanguageBox.appendChild(detectTextBox);
+    detectedLanguage = document.createElement('p');
+    detectedLanguage.id = 'detectedLanguage';
+    detectLanguageBox.appendChild(detectedLanguage);
+    playgroundWindow.appendChild(detectLanguageBox);
     dismissButton.id = 'dismissButton';
     dismissButton.textContent = 'Dismiss';
     playgroundWindow.appendChild(dismissButton);
-    // Append the floating window to the document body
+    
     document.body.appendChild(playgroundWindow);
-
 
     const styles = `
     #playgroundWindow {
@@ -87,6 +98,22 @@ function createPlayground() {
         color: black !important;
         margin: 5px;
     }
+    #detectLanguageBox {
+        width: 100%;   
+    }
+    #detectTextBox {
+        width: 100%;
+        height: 100px;
+        margin-bottom: 5px;
+        background-color: white !important;
+        color: black !important;
+        resize: none;
+    }
+    #detectedLanguage {
+        background-color: white !important;
+        color: black !important;
+        margin: 5px;
+    }
     `
 
     const styleSheet = document.createElement("style")
@@ -111,6 +138,21 @@ function createPlayground() {
         if (isDragging) {
             playgroundWindow.style.left = (event.clientX - offsetX) + 'px';
             playgroundWindow.style.top = (event.clientY - offsetY) + 'px';
+            // do not let the window go off the screen to the left or top or right or bottom
+            if (playgroundWindow.offsetLeft < 0) {
+                playgroundWindow.style.left = 0;
+            }
+            if (playgroundWindow.offsetTop < 0) {
+                playgroundWindow.style.top = 0;
+            }
+            if (playgroundWindow.offsetLeft + playgroundWindow.offsetWidth > window.innerWidth) {
+                playgroundWindow.style.left = window.innerWidth - playgroundWindow.offsetWidth + 'px';
+            }
+            if (playgroundWindow.offsetTop + playgroundWindow.offsetHeight > window.innerHeight) {
+                playgroundWindow.style.top = window.innerHeight - playgroundWindow.offsetHeight + 'px';
+            }
+
+        
         }
     });
 
@@ -144,7 +186,7 @@ function createPlayground() {
     });
 
 
-    select1.addEventListener('change', function () { 
+    select1.addEventListener('change', function () {
         const selectedLanguage = select1.value;
         chrome.storage.sync.get(['languages']).then(data => {
             const toLanguages = data.languages[selectedLanguage];
@@ -187,6 +229,27 @@ function createPlayground() {
                 })
         }
             , 1000);
+    })
+
+    detectTextBox.addEventListener('input', function () {
+        // check if user has stopped typing for 1 second
+        clearTimeout(timer2);
+        timer2 = setTimeout(() => {
+            const text = detectTextBox.value;
+            fetch('http://localhost:5005/detect/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    detectedLanguage.innerText = ""
+                    detectedLanguage.innerText = `${data.language}
+                    confidence:${data.confidence.toFixed(2) * 100}%`
+                })
+        }, 1000)
     })
 }
 
